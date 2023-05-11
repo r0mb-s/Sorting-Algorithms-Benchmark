@@ -12,3 +12,13 @@ Al treilea argument reprezintă numărul de liste. Aceasta se va introduce ca un
 Al patrulea argument reprezintă intervalul elementelor din listă. Dacă valoarea trecută este $0$, atunci intervalul va fi constanta RAND_MAX
 
 Al cincelea argument va specifica dacă lista random generată va fi: crescătoare ($1$), descrecătoare ($-1$) sau random ($0$)
+
+Astfel, o comanda valida ar fi:
+
+main merge 9 2 999 -1
+care va sorta $10^2$ liste descrescătoare de $10^9$ elemente din intervalul $[0, 999]$ folosind Merge Sort
+
+sau
+
+main bubble 2 0 1 0
+care va sorta $10^0$ liste random de $10^1$ elemente din intervalul $[0, 2^{32}]$ folosind Bubble Sort
