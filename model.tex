@@ -1,0 +1,579 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[romanian]{babel}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\graphicspath{ {./imagini/} }
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+\usepackage{pgfplotstable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{colortbl}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\renewcommand\lstlistingname{Fragment de cod}
+\renewcommand\lstlistlistingname{Fragmente de cod}
+
+\title{Comparție teoretică și experimentală a câtorva algoritmi de sortare}
+\author{Alexandru Ștefănescu\\
+Departamentul de Informatică\\
+Facultatea de Matematică şi Informatică, \\
+Universitatea de Vest Timişoara, România, \\
+Email: \href{mailto:alexandru.stefanescu04@e-uvt.ro}{\texttt{alexandru.stefanescu04@e-uvt.ro}} \date{}
+}
+
+\pgfplotstableset{
+  every head row/.style={before row=\toprule,after row=\midrule},
+  every last row/.style={after row=\bottomrule},
+  fixed,precision=2,
+}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+Sortarea este o problemă fundamentală în domeniul informaticii, ea stă la baza multor probleme fie că avem nevoie de o listă de numere care să fie în ordine 
+crescătoare, fie că ordonăm o listă de persoane, după nume, în ordine alfabetică. Cum volumul informației este în continuă creștere, este foarte
+important să putem identifica algoritmul de sortare potrivit pentru nevoile noastre și calitățile și dezavantajele acestuia.
+
+În această lucrare vom analiza 9 algoritmi de sortare, de diferite feluri, și le vom compara performanța pentru
+a putea vedea în ce situații se pot folosi fiecare. De asemenea vom vedea conceptele din spatele fiecăruia, cu scopul de a înțelege
+și de ce în anumite situații trebuie folosiți anumiți algoritmi.
+
+\end{abstract}
+
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+\section{Introducere}
+Sortarea este procesul prin care aranjăm un grup de elemente după un anumit criteriu. De exemplu
+ordonarea crescătoare este sortarea elemntelor în funție de valoarea cea mai mare.
+
+De asemenea sortarea stă la baza mai multor operații în domeniul informaticii, precum căutarea.
+
+
+Mai multe detalii în legătura cu codul sursă se pot găsi pe următorul link:
+
+\url{https://github.com/r0mb-s/Sorting-Algorithms-Benchmark}.
+
+
+\subsection{Motivaţie}
+
+Sortarea este o operație foarte importantă și, astfel este vital să cunoaștem pe deplin particularitățiile
+celor mai importanți algoritmi de sortare, pentru ca mai departe să ne ușurăm munca prin a face alegerea potrivită în funcție de situația care apare.
+
+\section{Descrierea sortării}
+\label{sec:formala}
+
+Orice algoritm de sortare poate fi caracterizat prin complexitatea temporală, complexitate spațială, stabilitate, tip de operații,
+și adaptabilitate.
+
+\begin{description}
+\item[Complexitate temporală: ]
+Complexitatea temporală reprezintă timpul în care un anumit algoritm termină de executat ce a avut de făcut. Este reprezentată ca o funcție
+care are legătură cu numărul de elemente din datele de intrare. Cum datele de intrare influențează timpul de execuție al algoritmilor
+de sortare, funcția care reprezintă complexitatea temporală este notată cu $O$ (ex. $O(n^2)$, unde n este lungimea listei care trebuie sortată) și
+$O(n)$ reprezintă o limită superioară a timpului de execuție al agoritmului \cite{cormenIntroduction}.
+Astfel un algoritm de sortare pătratic are complexitatea temporală $O(n^2)$, iar unul logaritmic are complexitatea temporală $O(log n)$.
+\end{description}
+
+\begin{description}
+\item[Complexitate spațială: ]
+Complexitatea spațială reprezintă spațiul datelor de intrare și spațiul auxiliar ocupat în memorie pe parcursul execuției
+algoritmului Aceasta este de asemenea notată cu $O$ și are ca parametru mărimea datele de intrare. După acest criteriu algoritmii de sortare
+pot fi de tip ``pe loc''(in-place, dacă nu folosesc spațiu auxiliar pentru a sorta lista) sau nu.
+\end{description}
+
+\begin{description}
+\item[Stabilitate: ]
+Reprezintă modul în care algoritmul de sortare tratează cazurile în care 2 elemente au aceeași valoare. Un algoritm de sortare este
+stabil dacă pastrează ordinea relativă a elementelor de aceeași valoare
+\end{description}
+
+\begin{description}
+\item[Tip de operații: ]
+Tipul de operații reprezintă modul în care un algoritm de sortare funcționeaza. Astfel, avem 2 categorii: algortimii de sortare bazați
+pe comparații și cei care nu sunt bazați pe operații. Cei bazați pe comparații compară elementele după valoarea lor, cele care nu sunt
+bazate pe comparații folosesc alte metode precum ar fi vectori de frecvență pentru a putea sorta datele de intrare.
+\end{description}
+
+
+\subsection{Preliminarii}
+\label{sub:prel}
+
+În această lucrare vom analiza următorii algoritmi de sortare bazați pe comparații (algoritmii au fost preluați din cărțile
+\cite{cormenIntroduction}\cite{skiena1998algorithm}\cite{sedgewick1998algorithms}):\newline
+
+{\bf Bubble Sort} - Este o metodă de sortare care parcurge datele de intrare și interschimbă două poziții alăturate dacă cele două
+numere nu sunt în ordinea care trebuie. Această parcurgere se repetă până când nu mai este nevoie de nici o interschimbare.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n^2)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: stabil\newline
+
+{\bf Selection Sort} - Este o metodă de sortare care parcurge datele de intrare și alege cea mai mică valoare din porțiunea
+nesortată a listei și o mută în porțiunea sortată.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n^2)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: instabil (poate fi modificat pentru a fi stabil)\newline
+
+{\bf Insertion Sort} - Această metodă împarte datele de intrare într-o parte sortată și o parte nesortată, iar dupa aceea
+extrage câte un element din partea nesortată și îl așează pe poziția sa corespunzătoare în partea sortată.
+
+\underline {Proprietăți:}
+    
+Complexitate temporală $O(n^2)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: stabil\newline
+
+{\bf Merge Sort} - Această metodă împarte datele de intrare în două jumătăți, iar apoi sortează fiecare jumătate folosind aceeași
+tehnică de divizare până se ajunge la liste de un singur element, după care le reunește recursiv pe toate, într-un final formându-se
+lista de la început dar sortată.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n log n)$
+
+Complexitate spațială $O(n)$
+
+Stabilitate: stabil\newline
+
+{\bf Quick Sort} - Această metodă partiționează lista în funcție de un pivot ales, sortează partițiile și le reunește pentru a forma lista sortată.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n log n)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: instabil (poate fi modificat pentru a fi stabil)\newline
+
+{\bf Heap Sort} - Această metodă metodeă se bazează pe Heapuri binare și de proprietățile acestora \cite{cormenIntroduction} pg. 151
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n log n)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: instabil (poate fi modificat pentru a fi stabil)\newline
+
+{\bf Shell Sort} - Această metodă metodeă sortează perechi de numere îndepărtate (lugimea k) una față de cealaltă
+, astfel dupa o sortare lista este k-sortată. După aceea k scade până ajunge la 1, astfel obținându-se o listă sortată.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n log n)$
+
+Complexitate spațială $O(n)$ (in-place)
+
+Stabilitate: instabil (poate fi modificat pentru a fi stabil)\newline
+
+{\bf Tim Sort} - Această metodă împarte lista în segmente pe care le sortează folosind Insertion Sort și după le reunește
+folosind merge-ul de la Merge Sort.
+
+\underline {Proprietăți:}
+
+Complexitate temporală $O(n log n)$
+
+Complexitate spațială $O(n)$
+
+Stabilitate: stabil\newline
+
+Și următorii algoritmi care nu sunt bazați pe comparații:
+
+\begin{enumerate}
+    \item {\bf Radix Sort} - Este o metodă care folosește Counting Sort sortând fiecare element dupa fiecare cifră (prima oară cifra unităților,
+     după cifra zecilor și tot așa).
+
+    \underline {Proprietăți:}
+    
+    Complexitate temporală $O(n * k)$, unde k este cardinalul alfabetului din care sunt formate numerele
+
+    Complexitate spațială $O(n + k)$
+
+    Stabilitate: stabil
+\end{enumerate}
+
+\section{Modelare şi implementare}
+
+Pentru a putea compara algoritmii, și a vedea dincolo de complexitatea temporală descrisă în O, vom
+avea nevoie de un generator de numere random pe care le vom adăuga într-o listă. Pentru ca rezultatele să
+fie cât mai aproape de realitate vom considera mai multe liste de același număr de elemente.\newline
+
+Pentru cele de mai sus avem următoarea secvență de cod:
+
+\begin{lstlisting}[language=C++]
+    for(int l = 1; l <= nrListe; l ++){
+        int *lista = new int[nrElementeLista];
+        if(lista != nullptr)
+            for(int i = 1; i <= nrElementeLista; i ++)
+                *(lista + i) = rand() % interval;
+    }
+\end{lstlisting}
+nrListe - reprezintă numărul de liste aleatorii pe care le vom crea\newline
+nrElementeLista - reprezintă ce lungime va avea fiecare listă\newline
+interval - reprezintă intervalul în care se va încadra fiecare element
+din listă.\newline
+
+După ce se crează o listă vom porni un cronometru cu ajutorul librăriei chrono (din C++) și îl vom opri
+după terminarea sortării. Acest timp se va adăuga la un total (doar dacă sortarea a avut loc cu succes), iar
+după, acel total se va împărți la nrListe pentru a afla timpul mediu de execuție al acelui algoritm.
+
+Pentru a folosi programul, compilați fișierul main.cpp, iar apoi dintr-o linie de comandă rulați executabilul
+main cu următorii parametri:
+
+\begin{enumerate}
+    \item Primul argument reprezintă algoritmul pe care doriți să îl testați și se vor folosi cuvintele cheie:
+    
+    ``bubble'' (Bubble Sort), ``insert'' (Insertion Sort), ``select'' (Selection Sort), ``quick'' (QuickSort),
+    ``merge'' (Merge Sort), ``heap'' (Heap Sort), ``shell'' (Shell Sort), ``tim'' (Tim Sort), ``count'' (Counting Sort),
+    ``radix'' (Radix Sort).
+
+    \item Al doilea argument reprezintă lungimea listei. Aceasta se va introduce ca un numă natural $n$, unde lungimea listei
+    va fi $10^n$.
+
+    \item Al treilea argument reprezintă numărul de liste. Aceasta se va introduce ca un numă natural $n$, unde lungimea listei
+    va fi $10^n$.
+
+    \item Al patrulea argument reprezintă intervalul elementelor din listă. Dacă valoarea trecută este 0,
+    atunci intervalul va fi constanta RAND\_MAX.
+
+    \item Al cincilea argument reprezintă starea datelor de intrare, 0 - elemente random, 1 - elemente sortate crescător
+    , -1 - elemente sortate descrescător. 
+
+\end{enumerate}
+
+Un exemplu de sir de argumente ar fi:\newline
+
+{\bf main radix 6 2 100 -1} \newline
+
+Care va sorta $10^2$ liste ordonate descrescător, fiecare de câte $10^6$ elemente și fiecare elemnt aflându-se în intervalul $[0, 100]$
+
+
+\section{Studiu de caz / experiment}
+
+Pentru fiecare algoritm s-au efectuat teste cu liste de 1.000 până la 1.000.000 de elemente pentru algoritmii
+pătratici și de la 1.000 până la 1.000.000.000 pt cei logaritmici și cei care nu sunt bazați pe comparații.
+Tabelele cu rezultatele se pot găsi în anexe.
+
+Testele au fost făcute pe un procesor AMD® Ryzen 7 4800H.
+\pagebreak
+
+\begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}
+\begin{loglogaxis}[
+    width=15cm,
+    xlabel={Date de intrare},
+    ylabel={Timp (s)},
+    xmin=9, xmax=1500000,
+    ymin=0, ymax=4000,
+    xtick={10, 100, 1000, 10000, 100000, 1000000},
+    ytick={0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000},
+    legend pos=north west,
+    ymajorgrids=true,
+    grid style=dashed,
+]
+      
+\addplot table [x=ele,y=bubble] {grafic1.txt};
+\legend{Bubble Sort}
+\addplot table [x=ele,y=insertion] {grafic1.txt};
+\addlegendentry{Insertion Sort}
+\addplot table [x=ele,y=selection] {grafic1.txt};
+\addlegendentry{Selection Sort}
+\addplot table [x=ele,y=tim] {grafic1.txt};
+\addlegendentry{Tim Sort}
+
+    
+\end{loglogaxis}
+\end{tikzpicture}
+\end{figure}
+
+Rezultatele de mai sus au fost obținute analizând comportamentul celor 4 algoritmi
+pe liste nesortate cu elemente aleatorii din intervalul $0$ - $2^{32}$. Am mai adăugat pe
+lângă Bubble Sort, Insertion Sort și Selction Sort un algoritm logaritmic pentru a ne putea
+crea o imagine de ansamblu asupra diferenței dintre cele două tipuri.
+
+De asemenea, putem vedea că pentru liste de lungime trivială timpii de execuție sunt foarte
+asemănători indiferent de metoda de sortare. În plus putem vedea că deși cei 3 algoritmi au complexitatea
+temporală $O(n^2)$, Insertion Sort este cel mai rapid dintre ei, având la liste de până la 100
+de elemente același timp de execuție ca și Tim Sort și menținând un avantaj semnificativ și constant față
+de Bubble Sort și Selection Sort.
+
+\pagebreak
+
+\begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}
+\begin{loglogaxis}[
+    width=15cm,
+    xlabel={Date de intrare},
+    ylabel={Timp (s)},
+    xmin=9, xmax=1500000,
+    ymin=0, ymax=4000,
+    xtick={10, 100, 1000, 10000, 100000, 1000000},
+    ytick={0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000},
+    legend pos=north west,
+    ymajorgrids=true,
+    grid style=dashed,
+]
+      
+\addplot table [x=ele,y=bubble(a)] {grafic1.txt};
+\legend{Bubble Sort}
+\addplot table [x=ele,y=insert(a)] {grafic1.txt};
+\addlegendentry{Insertion Sort}
+\addplot table [x=ele,y=select(a)] {grafic1.txt};
+\addlegendentry{Selection Sort}
+\addplot table [x=ele,y=tim(a)] {grafic1.txt};
+\addlegendentry{Tim Sort}
+
+    
+\end{loglogaxis}
+\end{tikzpicture}
+\end{figure}
+
+Deși pare a fi un grafic total diferit, singura diferență sunt datele de intrare. Putem vedea o schimbare majoră
+atunci când lista este deja sortată crescător, în special Insertion Sort reușește să se execută mai repede chiar decât Tim Sort,
+acesta atingând un timp aproape liniar, dar nu numai, toți algoritmii văd o îmbunătățire a timpului de execuție.
+
+Insertion Sort prezintă acest comportament deoarece fiecare element nou pe care îl compară cu anteriorul (cel mai mare din partea sortată)
+este mai mare și astfel nu se efectuează nicio interschimbare. Un astfel de comportament l-ar putea prezenta și Bubble Sort
+dacă am aplica o mică optimizare, aceea fiind ca la fiecare parcurgere să se verifice dacă nu cumva lista este deja sortată.
+
+
+
+\pagebreak
+
+\begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}
+\begin{loglogaxis}[
+    width=15cm,
+    xlabel={Date de intrare},
+    ylabel={Timp (s)},
+    xmin=9, xmax=1500000,
+    ymin=0, ymax=4000,
+    xtick={10, 100, 1000, 10000, 100000, 1000000},
+    ytick={0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000},
+    legend pos=north west,
+    ymajorgrids=true,
+    grid style=dashed,
+]
+      
+\addplot table [x=ele,y=bubble(d)] {grafic1.txt};
+\legend{Bubble Sort}
+\addplot table [x=ele,y=insert(d)] {grafic1.txt};
+\addlegendentry{Insertion Sort}
+\addplot table [x=ele,y=select(d)] {grafic1.txt};
+\addlegendentry{Selection Sort}
+\addplot table [x=ele,y=tim(d)] {grafic1.txt};
+\addlegendentry{Tim Sort}
+
+    
+\end{loglogaxis}
+\end{tikzpicture}
+\end{figure}
+
+Spre deosebire de schimbarea anterioară, algoritmi râmân cam pe aceleași locuri având ca date de intrare
+o listă sortată descrescător. În această situație Insert Sort nu mai intră în situația cea mai favorabilă, ci chiar în cea mai
+nefavorabilă, dublându-și aproape timpul de execuție în aproape toate lungimile de listă.
+
+\pagebreak
+
+\begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}
+\begin{loglogaxis}[
+    width=15cm,
+    xlabel={Date de intrare},
+    ylabel={Timp (s)},
+    xmin=100, xmax=101000000,
+    ymin=0.000001, ymax=100,
+    xtick={10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000},
+    ytick={0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000},
+    legend pos=north west,
+    ymajorgrids=true,
+    grid style=dashed,
+]
+      
+\addplot table [x=ele,y=quick] {grafic2.txt};
+\legend{Quick Sort}
+\addplot table [x=ele,y=merge] {grafic2.txt};
+\addlegendentry{Merge Sort}
+\addplot table [x=ele,y=heap] {grafic2.txt};
+\addlegendentry{Heap Sort}
+\addplot table [x=ele,y=shell] {grafic2.txt};
+\addlegendentry{Shell Sort}
+\addplot table [x=ele,y=tim] {grafic2.txt};
+\addlegendentry{Tim Sort}
+\addplot table [x=ele,y=radix(2)] {grafic2.txt};
+\addlegendentry{Radix Sort(100)}
+\addplot table [x=ele,y=radix(6)] {grafic2.txt};
+\addlegendentry{Radix Sort(1 000 000)}
+\addplot table [x=ele,y=radix] {grafic2.txt};
+\addlegendentry{Radix Sort}
+
+    
+\end{loglogaxis}
+\end{tikzpicture}
+\end{figure}
+
+După cum putem vedea din grafic Radix Sort pe elemente din intervalul [0, 100] este cel mai rapid, Tim Sort fiind următorul.
+Pe cealaltă parte avem Radix Sort pe elemente din intervalul [0, $2^{32}$] care pare să fie cel mai încet pe setul de date pe care l-am testat până
+ajungem la liste de $10^8$ elemente, unde vedem ca Heap Sort durează cel mai mult.
+
+Deși Radix Sort pare să fie cel mai rapid, o situație în care să avem de sortat elemente doar din intervalul [0, 100] este
+foarte rară și astfel l-am introdus doar pentru a putea vedea avantajul acestui algoritm atunci când intervalul elementelor
+se schimbă
+
+\pagebreak
+
+
+\section{Comparaţia cu literatura}
+
+Lucruri similare au fost făcute în~\cite{al2013review}. Deși la prima vedere rezultatele par foarte diferite,
+când luam în vedere diferența de hardware și ne uitam mai mult la diferența dintre algoritmi putem observa aproximativ
+aceleași proporții numai că la liste de numere mult mai scurte.
+
+Alt articol care prezintă același lucru este \cite{hammad2015comparative}, având pe lângă partea experimentală și o parte
+teoretică mult mai bogată în conținut, conținând metode de creare a unor algoritmi eficienți,
+metode de abordare a problemei sortării și descrierea unor algoritmi cunoscuți.
+
+\section{Concluzii şi direcţii viitoare}
+
+Sortarea reprezintă un capitol foarte important al informaticii, dar și foarte complex. Există
+o mulțime de algoritmi pe care nu am reușit să îi descriu în această lucrare, care au avantajele și dezavantajele
+lor și care pot avea comportamente surprinzătoare în anumite situații, cum a fost și Insert Sort
+la liste deja sortate.
+
+Astfel, pe viitor am de gând să îmi extind orizontul printr-o lucrare mult mai complexă, nu neapărat prin numărul de algoritmi
+pe care să îi analizez, dar mai degrabă pe diversitatea lor. De exemplu, abordarea algoritmilor de sortare
+paraleli, dar și algoritmi care au nevoie de hardware specializat pentru a atinge potențialul maxim precum Bead Sort.
+
+\pagebreak
+\bibliographystyle{apalike}
+\bibliography{bibliografie}
+
+\pagebreak
+
+\section{Anexe}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{ ||r| c| c| c|| }
+\hline\hline
+  Elemente & Bubble sort & Insertion Sort & Selection Sort  \\
+  \hline
+10  & 0.0000018 & 0.0000017 & 0.0000016 \\
+100  & 0.0000383 & 0.0000241 & 0.0000107 \\
+1000  & 0.001582 & 0.001008 & 0.000439\\
+10000  & 0.17490 & 0.095847 & 0.04624 \\
+100000  & 25.293 & 9.5150 & 5.0201 \\
+1000000  & 2596.251  & 952.793 & 580.8731 \\
+\hline\hline
+\end{tabular}
+    \caption{Rezultate experimentale obţinute (în secunde).}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{ ||r| c| c| c|| }
+\hline\hline
+  Elemente & Bubble sort & Insertion Sort & Selection Sort  \\
+  \hline
+10  & 0.0000012 & 0.0000011 & 0.0000011 \\
+100  & 0.0000123 & 0.0000114 & 0.0000013 \\
+1000  & 0.001072 & 0.000962 & 0.000003 \\
+10000  & 0.10636 & 0.09572 & 0.000026 \\
+100000  & 10.6198 & 9.5336 & 0.00025 \\
+1000000  & 1064.217 & 956.002 & 0.0025 \\
+\hline\hline
+\end{tabular}
+    \caption{Rezultate experimentale obţinute - listă sortată crescător (în secunde).}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{ ||r| c| c| c|| }
+\hline\hline
+  Elemente & Bubble sort & Insertion Sort & Selection Sort  \\
+  \hline
+10  & 0.0000013 & 0.0000012 & 0.0000012 \\
+100  & 0.0000215 & 0.0000103 & 0.0000125 \\
+1000  & 0.001939 & 0.000882 & 0.001017 \\
+10000  & 0.19335 & 0.09752 & 0.10006 \\
+100000  & 19.403 & 9.8028 & 10.1474 \\
+1000000  & 1938.268 & 1192.13 & 1036.159 \\
+\hline\hline
+\end{tabular}
+    \caption{Rezultate experimentale obţinute - listă sortată descrescător (în secunde).}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{ ||r| c| c| c| c| c|| }
+\hline\hline
+  Elemente & Quick sort & Merge Sort & Heap Sort & Shell Sort & Tim Sort \\
+  \hline
+10  & 0.0000014 & 0.0000016 & 0.0000014 & 0.0000013 & 0.0000015 \\
+100  & 0.0000060 & 0.0000090 & 0.0000080 & 0.0000060 & 0.0000048 \\
+1000  & 0.000073 & 0.000109 & 0.000110 & 0.000085 & 0.000065 \\
+10000  & 0.000976 & 0.0013412 & 0.0014331 & 0.0012291 & 0.0009048 \\
+100000  & 0.01221 & 0.015988 & 0.018105 & 0.017746 & 0.011647 \\
+1000000  & 0.14685 & 0.18627 & 0.25131 & 0.25654 & 0.14187 \\
+10000000  & 1.7152 & 2.13423 & 3.96204 & 3.88753 & 1.70757 \\
+100000000  & 19.574 & 24.153 & 58.732 & 20.487 & 20.097 \\
+\hline\hline
+\end{tabular}
+    \caption{Rezultate experimentale obţinute (în secunde).}
+\end{table}
+
+\end{document}
